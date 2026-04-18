@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNS Anatomy Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#a855f7;--purple-d:#7c3aed;--cyan:#06b6d4;--amber:#f59e0b;--green:#22c55e;--red:#ef4444;--pink:#ec4899;
+  --bg:#08080f;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+canvas#particles{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+.screen{position:relative;z-index:1;display:none;min-height:100vh;padding:20px;align-items:center;justify-content:center;flex-direction:column}
+.screen.active{display:flex}
+#homeScreen{background:radial-gradient(ellipse 80% 60% at 50% -10%,#1e0a4a 0%,var(--bg) 65%)}
+#endScreen{background:radial-gradient(ellipse 80% 60% at 50% 10%,#1e0a4a 0%,var(--bg) 65%)}
+#leaderboardScreen,#shareScreen{background:var(--bg);justify-content:flex-start;padding-top:28px;overflow-y:auto}
+
+/* HOME */
+.brain-logo{font-size:76px;animation:brainPulse 2.2s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(168,85,247,.5))}
+@keyframes brainPulse{0%,100%{transform:scale(1) rotate(-6deg)}50%{transform:scale(1.12) rotate(6deg)}}
+.title{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#c084fc,#06b6d4,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin:8px 0 4px;letter-spacing:-1px}
+
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:420px;margin:12px 0 18px}
+.feat-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.feat-icon{font-size:20px;min-width:26px;text-align:center}
+.feat-val{font-size:.95rem;font-weight:700;color:#fff;font-family:'Syne',sans-serif}
+.feat-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+
+.home-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:22px;padding:26px;width:100%;max-width:420px;backdrop-filter:blur(12px)}
+.name-label{font-size:.8rem;color:var(--muted2);margin-bottom:8px}
+.name-label span{color:var(--red);font-size:.68rem}
+.name-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-bottom:4px}
+.name-input{width:100%;padding:11px 12px;border-radius:12px;border:2px solid rgba(168,85,247,.35);background:rgba(255,255,255,.05);color:#fff;font-size:.92rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .25s;min-width:0}
+.name-input:focus{border-color:var(--purple)}
+.name-input::placeholder{color:#475569}
+.name-hint{font-size:.72rem;min-height:16px;margin-bottom:6px;color:#ef4444}
+
+.btn{padding:12px 22px;border-radius:12px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-top:10px;font-family:'DM Sans',sans-serif}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-d));color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(168,85,247,.45)}
+.btn-secondary{background:rgba(255,255,255,.06);color:var(--muted2);border:1px solid var(--border)}
+.btn-secondary:hover{background:rgba(255,255,255,.1);color:#fff}
+.btn-cyan{background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff}
+.btn-cyan:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(6,182,212,.4)}
+
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:10px 22px;border-radius:12px;font-size:.87rem;font-weight:600;z-index:3000;animation:toastSlide .3s ease;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.ok{border-color:rgba(34,197,94,.4);color:#86efac}
+@keyframes toastSlide{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* BOSS */
+.boss-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.boss-skull{font-size:90px;animation:skullShake .4s ease-in-out infinite}
+@keyframes skullShake{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.12)}}
+.boss-title{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#ff6b35,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+.boss-sub{color:var(--muted2);font-size:.95rem;letter-spacing:1px}
+
+/* COUNTDOWN */
+.countdown-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:550;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.countdown-num{font-family:'Syne',sans-serif;font-size:9rem;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:countPop .9s ease-out}
+@keyframes countPop{0%{transform:scale(2.2);opacity:0}60%{transform:scale(.88);opacity:1}100%{transform:scale(1);opacity:1}}
+.countdown-label{font-size:.9rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+
+/* GAME */
+#gameScreen{justify-content:flex-start;padding-top:14px}
+.stats-bar{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:9px;width:100%;max-width:740px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px 12px;text-align:center;min-width:68px}
+.stat-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.stat-val{font-size:1.1rem;font-weight:700;color:#fff;font-family:'Syne',sans-serif}
+.stat-box.boss-stat{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.08)}
+.stat-box.boss-stat .stat-val{color:#fca5a5}
+
+#timerBar{width:100%;max-width:740px;height:7px;background:rgba(255,255,255,.07);border-radius:4px;margin-bottom:11px;overflow:hidden}
+#timerFill{height:100%;border-radius:4px;transition:width .1s linear;background:linear-gradient(90deg,var(--green),var(--amber),var(--red))}
+#timerFill.warning{animation:timerWarn .45s ease-in-out infinite}
+@keyframes timerWarn{0%,100%{opacity:1}50%{opacity:.35}}
+#timerFill.boss-timer{background:linear-gradient(90deg,#f59e0b,#ef4444,#dc2626)}
+
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:24px;width:100%;max-width:740px;backdrop-filter:blur(10px);transition:border-color .3s}
+.question-card.boss-card{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.04);box-shadow:0 0 30px rgba(239,68,68,.1)}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.q-num-tag{font-size:.73rem;color:var(--muted);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px}
+.badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.q-type-tag{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px}
+.q-type-mcq{background:rgba(6,182,212,.15);color:var(--cyan)}
+.q-type-tf{background:rgba(245,158,11,.15);color:var(--amber)}
+.boss-badge{font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,rgba(239,68,68,.3),rgba(245,158,11,.2));color:#fca5a5;border:1px solid rgba(239,68,68,.3);animation:bossBadgePulse 1.2s ease-in-out infinite}
+@keyframes bossBadgePulse{0%,100%{box-shadow:0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 10px rgba(239,68,68,.5)}}
+.q-text{font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:18px;line-height:1.6}
+.options{display:flex;flex-direction:column;gap:9px}
+.opt{padding:11px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);font-size:.9rem;cursor:pointer;transition:all .18s;text-align:left;font-family:'DM Sans',sans-serif}
+.opt:hover:not(.disabled){background:rgba(168,85,247,.14);border-color:rgba(168,85,247,.45);transform:translateX(5px)}
+.opt.correct{background:rgba(34,197,94,.2);border-color:var(--green);color:#86efac}
+.opt.wrong{background:rgba(239,68,68,.2);border-color:var(--red);color:#fca5a5}
+.opt.disabled{cursor:not-allowed}
+.bottom-row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:8px}
+.lifeline-btn{padding:7px 14px;border-radius:10px;border:1px solid rgba(6,182,212,.35);background:rgba(6,182,212,.08);color:var(--cyan);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.lifeline-btn:hover:not(:disabled){background:rgba(6,182,212,.18)}
+.lifeline-btn:disabled{opacity:.22;cursor:not-allowed}
+.combo-display{font-size:.8rem;font-weight:700;padding:5px 12px;border-radius:20px}
+.cx1{color:var(--muted2)}.cx2{background:rgba(34,197,94,.15);color:#86efac}.cx3{background:rgba(245,158,11,.15);color:#fcd34d}
+.cx4{background:rgba(168,85,247,.2);color:#d8b4fe;animation:comboPulse 1.1s ease-in-out infinite}
+@keyframes comboPulse{0%,100%{box-shadow:0 0 0 rgba(168,85,247,0)}50%{box-shadow:0 0 14px rgba(168,85,247,.5)}}
+.lives-display{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+.heart{font-size:16px;transition:all .3s}
+.heart.lost{opacity:.12;transform:scale(.7)}
+.streak-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;justify-content:center}
+.streak-dots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .25s}
+.dot.active{background:var(--amber);box-shadow:0 0 7px var(--amber)}
+
+.float-popup{position:fixed;font-size:1.25rem;font-weight:800;pointer-events:none;animation:floatUp .9s ease-out forwards;z-index:999}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-75px) scale(1.3)}}
+.streak-popup{position:fixed;top:44%;left:50%;transform:translate(-50%,-50%);font-size:1.9rem;font-weight:900;pointer-events:none;animation:streakPop .85s ease-out forwards;z-index:1000;white-space:nowrap;font-family:'Syne',sans-serif}
+@keyframes streakPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}
+.confetti-piece{position:fixed;pointer-events:none;animation:confettiFall linear forwards;z-index:998;border-radius:2px}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-10px) rotate(0deg)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+
+/* END */
+.end-trophyrow{font-size:3rem;margin-bottom:4px}
+.rank-title-display{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;text-align:center;margin:6px 0 2px}
+.rank-subtitle{font-size:.85rem;color:var(--muted);margin-bottom:4px;text-align:center}
+.end-score-big{font-family:'Syne',sans-serif;font-size:3.6rem;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.end-mark{color:var(--muted);font-size:.85rem;margin-bottom:16px;text-align:center}
+.end-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:380px;margin-bottom:20px}
+
+/* LEADERBOARD */
+.lb-wrap{width:100%;max-width:820px}
+.lb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.lb-title-text{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800}
+.lb-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.lb-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.lb-table th{color:#3f4a5a;font-size:.66rem;text-transform:uppercase;letter-spacing:.8px;padding:7px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+.lb-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.lb-table tr.me td{background:rgba(168,85,247,.1);color:#c4b5fd}
+.rank-badge{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;background:rgba(255,255,255,.07)}
+.rank-1{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.rank-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff}
+.rank-3{background:linear-gradient(135deg,#cd7c3c,#a0522d);color:#fff}
+.rank-chip{font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(168,85,247,.15);color:#c084fc}
+.lb-loading{text-align:center;color:var(--muted);padding:40px;font-size:.9rem}
+.lb-spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(168,85,247,.3);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SHARE */
+#shareScreen{align-items:center}
+.share-wrap{width:100%;max-width:480px}
+#shareCanvas{border-radius:18px;max-width:100%;display:block;margin:0 auto 16px}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<!-- HOME -->
+<div id="homeScreen" class="screen active">
+  <div class="brain-logo">🧠</div>
+  <div class="title">CNS Anatomy Quiz</div>
+  <div class="features-grid">
+    <div class="feat-item"><span class="feat-icon">❓</span><div><div class="feat-val">45 Qs</div><div class="feat-lbl">Questions</div></div></div>
+    <div class="feat-item"><span class="feat-icon">❤️</span><div><div class="feat-val">10 Lives</div><div class="feat-lbl">Per game</div></div></div>
+    <div class="feat-item"><span class="feat-icon">⏱️</span><div><div class="feat-val">18s / 25s</div><div class="feat-lbl">Normal / Boss</div></div></div>
+    <div class="feat-item"><span class="feat-icon">⚡</span><div><div class="feat-val">×4 Combo</div><div class="feat-lbl">Streak bonus</div></div></div>
+    <div class="feat-item"><span class="feat-icon">💀</span><div><div class="feat-val">Boss Qs</div><div class="feat-lbl">Every 10 questions</div></div></div>
+    <div class="feat-item"><span class="feat-icon">🏆</span><div><div class="feat-val">Ranks</div><div class="feat-lbl">Earn your title</div></div></div>
+  </div>
+  <div class="home-card">
+    <div class="name-label">Enter your full name <span>(first &amp; last, letters only)</span></div>
+    <div class="name-row">
+      <input class="name-input" id="firstName" placeholder="First name" maxlength="15" onkeydown="if(event.key==='Enter')startGame()">
+      <input class="name-input" id="lastName"  placeholder="Last name"  maxlength="15" onkeydown="if(event.key==='Enter')startGame()">
+    </div>
+    <div class="name-hint" id="nameHint"></div>
+    <button class="btn btn-primary" onclick="startGame()">▶ Start Quiz</button>
+    <button class="btn btn-secondary" onclick="handleLbClick()">🏆 Leaderboard</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="gameScreen" class="screen">
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-label">Score</div><div class="stat-val" id="scoreVal">0</div></div>
+    <div class="stat-box"><div class="stat-label">Question</div><div class="stat-val" id="qNum">1/45</div></div>
+    <div class="stat-box"><div class="stat-label">Lives</div><div class="stat-val" id="livesVal">10</div></div>
+    <div class="stat-box" id="timerBox"><div class="stat-label">Timer</div><div class="stat-val" id="timerVal">18</div></div>
+    <div class="stat-box"><div class="stat-label">Best Streak</div><div class="stat-val" id="bestStreakVal">0</div></div>
+  </div>
+  <div class="lives-display" id="heartsRow"></div>
+  <div class="streak-row">
+    <div class="streak-dots" id="streakDots"></div>
+    <div style="font-size:.78rem;font-weight:700;color:var(--amber);min-width:70px" id="streakCount">Streak: 0</div>
+  </div>
+  <div id="timerBar"><div id="timerFill" style="width:100%"></div></div>
+  <div class="question-card" id="qCard">
+    <div class="q-meta">
+      <span class="q-num-tag" id="qLabel">Q 1 of 45</span>
+      <div class="badges">
+        <span class="q-type-tag q-type-mcq" id="qTypeTag">MCQ</span>
+        <span class="boss-badge" id="bossBadge" style="display:none">💀 BOSS</span>
+      </div>
+    </div>
+    <div class="q-text" id="qText">Loading...</div>
+    <div class="options" id="optContainer"></div>
+    <div class="bottom-row">
+      <div class="combo-display cx1" id="comboDisp">×1 Combo</div>
+      <button class="lifeline-btn" id="lifelineBtn" onclick="useLifeline()">⏰ +10s (<span id="lifelineCount">3</span>)</button>
+    </div>
+  </div>
+</div>
+
+<!-- END -->
+<div id="endScreen" class="screen">
+  <div class="end-trophyrow" id="endEmoji">🏆</div>
+  <div class="rank-title-display" id="rankTitle">—</div>
+  <div class="rank-subtitle" id="rankSub">—</div>
+  <div class="end-score-big" id="endScore">0</div>
+  <div class="end-mark" id="endMark"></div>
+  <div class="end-stats" id="endStats"></div>
+  <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-primary" onclick="startGame()">▶ Play Again</button>
+    <button class="btn btn-cyan" onclick="goShare()">📸 Share Score</button>
+    <button class="btn btn-secondary" onclick="showLeaderboard('end')">🏆 Leaderboard</button>
+    <button class="btn btn-secondary" onclick="goHome()">← Home</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="leaderboardScreen" class="screen">
+  <div class="lb-wrap">
+    <div class="lb-header">
+      <div>
+        <div class="lb-title-text">🏆 Global Leaderboard</div>
+        <div class="lb-sub" id="lbSub">Loading scores from all players...</div>
+      </div>
+      <button class="btn btn-secondary" style="width:auto;padding:8px 18px;margin-top:0" onclick="backFromLb()">← Back</button>
+    </div>
+    <div id="lbContent">
+      <div class="lb-loading"><span class="lb-spinner"></span>Fetching global scores...</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE -->
+<div id="shareScreen" class="screen">
+  <div class="share-wrap">
+    <div class="lb-header">
+      <div class="lb-title-text">📸 Share Your Score</div>
+      <button class="btn btn-secondary" style="width:auto;padding:8px 18px;margin-top:0" onclick="showScreen('endScreen')">← Back</button>
+    </div>
+    <canvas id="shareCanvas" width="480" height="640"></canvas>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-cyan" onclick="downloadShare()">⬇️ Download Image</button>
+      <button class="btn btn-secondary" onclick="showScreen('endScreen')">← Back to Results</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   🔥 FIREBASE CONFIG
+   ═══════════════════════════════════════════════════════
+   To enable the global leaderboard:
+   1. Go to https://console.firebase.google.com
+   2. Create a new project (free Spark plan)
+   3. Click "Realtime Database" → Create Database → Start in TEST MODE
+   4. Copy your database URL (looks like: https://your-project-default-rtdb.firebaseio.com)
+   5. Paste it below replacing the placeholder
+   ═══════════════════════════════════════════════════════ */
+const FIREBASE_URL = "https://cns-anatomy-quiz-default-rtdb.firebaseio.com";
+/* ═══════════════════════════════════════════════════════ */
+
+const DB_PATH = FIREBASE_URL + "/scores";
+const PLACEHOLDER = false; // Firebase is now configured!
+
+/* ═══════════ QUESTIONS ═══════════ */
+const NORMAL_Q=[
+{q:"The medulla oblongata is conical with its broad extremity directed:",o:["Downwards","Upwards","Laterally","Posteriorly"],a:1,t:"mcq"},
+{q:"True or False: The open medulla contains the fourth ventricle.",o:["True","False"],a:1,t:"tf"},
+{q:"Which structure is on the ventral surface of the medulla oblongata?",o:["Fasciculus gracilis","Pyramid","Facial colliculus","Vestibular area"],a:1,t:"mcq"},
+{q:"The pyramids of the medulla are composed of:",o:["Spinocerebellar fibers","Corticospinal fibers","Rubrospinal fibers","Vestibulospinal fibers"],a:1,t:"mcq"},
+{q:"From which groove do rootlets of the hypoglossal nerve emerge?",o:["Anterior median fissure","Post-olivary fissure","Between pyramid and olive","Posterior median sulcus"],a:2,t:"mcq"},
+{q:"True or False: Lateral Medullary Syndrome is also known as Wallenberg Syndrome.",o:["True","False"],a:0,t:"tf"},
+{q:"Which artery is involved in Lateral Medullary Syndrome?",o:["Vertebral artery","Basilar artery","PICA","Anterior spinal artery"],a:2,t:"mcq"},
+{q:"Medial Medullary Syndrome is also known as:",o:["Wallenberg Syndrome","Dejerine's Anterior Bulbar Syndrome","Raymond's Syndrome","Millard Gubler Syndrome"],a:1,t:"mcq"},
+{q:"True or False: In Medial Medullary Syndrome, CN XII causes ipsilateral tongue paresis.",o:["True","False"],a:0,t:"tf"},
+{q:"The Facial Colliculus is created by CN VII fibers looping around:",o:["The trigeminal nucleus","The abducent nucleus","The hypoglossal nucleus","The vagal nucleus"],a:1,t:"mcq"},
+{q:"True or False: The Pons is approximately 2.5 cm in length.",o:["True","False"],a:0,t:"tf"},
+{q:"Which cranial nerve attaches at the pons via the middle cerebellar peduncle?",o:["CN VII","CN VI","CN V","CN VIII"],a:2,t:"mcq"},
+{q:"Raymond's Syndrome involves occlusion of:",o:["PICA","Vertebral artery","Para median branches of Basilar artery","Anterior spinal artery"],a:2,t:"mcq"},
+{q:"Millard Gubler Syndrome causes ipsilateral:",o:["Tongue paresis","Bell's palsy","Lateral rectus paralysis","Ptosis"],a:1,t:"mcq"},
+{q:"True or False: The cerebellum weighs approximately 150 grams.",o:["True","False"],a:0,t:"tf"},
+{q:"The cerebellar hemispheres work on which basis?",o:["Contralateral","Ipsilateral","Bilateral","Neither side"],a:1,t:"mcq"},
+{q:"How many pairs of deep cerebellar nuclei exist?",o:["2","3","4","5"],a:2,t:"mcq"},
+{q:"True or False: The primary fissure separates the anterior lobe from the flocculonodular lobe.",o:["True","False"],a:1,t:"tf"},
+{q:"Which fissure is the first to appear in cerebellar development?",o:["Primary fissure","Horizontal fissure","Posterolateral fissure","Secondary fissure"],a:2,t:"mcq"},
+{q:"The Vestibulocerebellum corresponds to which lobe?",o:["Anterior lobe","Posterior lobe","Flocculonodular lobe","Vermis"],a:2,t:"mcq"},
+{q:"Damage to the Vestibulocerebellum causes:",o:["Intention tremor","Dysmetria","Trunk ataxia and nystagmus","Pendular knee jerk"],a:2,t:"mcq"},
+{q:"True or False: The Cerebrocerebellum is the largest functional subdivision of the cerebellum.",o:["True","False"],a:0,t:"tf"},
+{q:"The 4th ventricle floor is formed by:",o:["Cerebellum and midbrain","Posterior surfaces of pons and upper medulla","Thalamus and hypothalamus","Superior and inferior colliculi"],a:1,t:"mcq"},
+{q:"The superior angle of the 4th ventricle is continuous with:",o:["The central canal","The cerebral aqueduct","The lateral ventricle","The 3rd ventricle"],a:1,t:"mcq"},
+{q:"True or False: The midbrain is approximately 2 cm in length.",o:["True","False"],a:0,t:"tf"},
+{q:"The tectum of the midbrain is located:",o:["Anterior to the cerebral aqueduct","Posterior to the cerebral aqueduct","Inferior to the pons","Lateral to the aqueduct"],a:1,t:"mcq"},
+{q:"True or False: There are 12 pairs of cranial nerves.",o:["True","False"],a:0,t:"tf"},
+{q:"Which cranial nerves arise from the cerebrum rather than the brainstem?",o:["CN I and II","CN III and IV","CN V and VI","CN VII and VIII"],a:0,t:"mcq"},
+{q:"The olfactory nerve (CN I) exits through:",o:["Optic canal","Cribriform plate","Jugular foramen","Foramen ovale"],a:1,t:"mcq"},
+{q:"The oculomotor nerve (CN III) provides parasympathetic supply to:",o:["Lacrimal gland","Parotid gland","Sphincter pupillae and ciliary muscle","Submandibular gland"],a:2,t:"mcq"},
+{q:"The abducent nerve (CN VI) supplies which muscle?",o:["Superior oblique","Superior rectus","Lateral rectus","Medial rectus"],a:2,t:"mcq"},
+{q:"True or False: CN XI exits via the jugular foramen and supplies SCM and trapezius.",o:["True","False"],a:0,t:"tf"},
+{q:"True or False: CN VII carries taste from the anterior 2/3 of tongue via SVA fibers.",o:["True","False"],a:0,t:"tf"},
+{q:"The diencephalon is derived embryologically from:",o:["Mesencephalon","Rhombencephalon","Prosencephalon","Telencephalon"],a:2,t:"mcq"},
+{q:"True or False: The thalamus relays ALL main sensory systems including the olfactory pathway.",o:["True","False"],a:1,t:"tf"},
+{q:"Thalamic lesions cause impairment of sensation on which side?",o:["Ipsilateral","Contralateral","Bilateral","No effect"],a:1,t:"mcq"},
+{q:"The pineal gland secretes which hormone in response to darkness?",o:["Serotonin","Melatonin","Cortisol","Oxytocin"],a:1,t:"mcq"},
+{q:"Which structure separates the superior and inferior cerebellar surfaces?",o:["Primary fissure","Posterolateral fissure","Horizontal fissure","Secondary fissure"],a:2,t:"mcq"},
+{q:"True or False: The medial geniculate body is the primary relay for the auditory system.",o:["True","False"],a:0,t:"tf"},
+{q:"The trochlear nerve (CN IV) arises from which side of the midbrain?",o:["Anterior","Posterior","Lateral","Inferior"],a:1,t:"mcq"},
+{q:"The subthalamic nucleus receives connections from the red nucleus and:",o:["Cerebellum","Substantia nigra","Thalamus","Hippocampus"],a:1,t:"mcq"}
+];
+
+const BOSS_Q=[
+{q:"💀 BOSS: A patient has ipsilateral Horner's syndrome, ipsilateral ataxia, and contralateral loss of pain/temperature. Which artery is most likely occluded?",o:["Vertebral artery","Posterior Inferior Cerebellar Artery (PICA)","Basilar artery","Anterior spinal artery"],a:1,t:"mcq"},
+{q:"💀 BOSS: Neurobiotaxis explains the Facial Colliculus because:",o:["CN VII axons regenerate toward the brainstem","The facial motor nucleus migrates away from the 4th ventricle floor; its anchored axon loops around the abducent nucleus creating the bump","CN VII crosses the midline twice in development","The abducent nucleus migrates toward CN VII fibers"],a:1,t:"mcq"},
+{q:"💀 BOSS: Which combination correctly matches cerebellar subdivisions to their deep nucleus output?",o:["Archicerebellum→Dentate; Paleocerebellum→Fastigial; Neocerebellum→Globose","Archicerebellum→Fastigial→Vestibular nuclei; Paleocerebellum→Globose & Emboliform→Red nucleus; Neocerebellum→Dentate→Thalamus","Archicerebellum→Globose; Paleocerebellum→Dentate; Neocerebellum→Fastigial","All subdivisions project exclusively through the dentate nucleus"],a:1,t:"mcq"},
+{q:"💀 BOSS: The dentato-rubro-thalamo-cortical pathway causes ipsilateral cerebellar deficits via double-crossing. Which statement is correct?",o:["Cerebellar efferents cross once in the superior peduncle; corticospinal fibers cross again at the pyramids — net effect is ipsilateral","The pathway never crosses","Efferents cross at the inferior colliculus and re-cross at the spinal cord","Cerebellar afferents cross at the pons and efferents cross at the medulla"],a:0,t:"mcq"}
+];
+
+/* ═══════════ RANKS ═══════════ */
+const RANKS=[
+  {min:0,   emoji:"🧪",title:"Lab Rat",           sub:"Still finding the neurons...",   color:"#94a3b8"},
+  {min:500, emoji:"🔬",title:"Synapse Apprentice", sub:"The signal is getting through.", color:"#06b6d4"},
+  {min:1200,emoji:"⚡",title:"Axon Blazer",        sub:"Firing on all cylinders.",       color:"#22c55e"},
+  {min:2200,emoji:"🧠",title:"Grey Matter Guru",   sub:"Your cortex is showing off.",    color:"#a855f7"},
+  {min:3200,emoji:"🔥",title:"Neuron Ninja",       sub:"Stealth, speed, precision.",     color:"#f59e0b"},
+  {min:4000,emoji:"💀",title:"Exam Terminator",    sub:"The exam never stood a chance.", color:"#ef4444"},
+  {min:4500,emoji:"🏆",title:"Professor Mode",     sub:"They should be grading YOU.",    color:"#fbbf24"},
+];
+function getRank(score){let r=RANKS[0];for(const rk of RANKS){if(score>=rk.min)r=rk;}return r;}
+
+/* ═══════════ STATE ═══════════ */
+let gs={};
+let timerInt=null;
+let lbFrom='home';
+/* 
+  hasPlayedEver — persisted in localStorage so leaderboard stays unlocked
+  across visits after the first completed game 
+*/
+let hasPlayedEver=!!localStorage.getItem('cnsHasPlayed');
+let lastEntry=null;
+let sessionId='';
+let audioCtx=null;
+
+/* ═══════════ AUDIO ═══════════ */
+function getAC(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return audioCtx;}
+function tone(freq,dur,type='sine',vol=0.2,delay=0){
+  try{const ctx=getAC();if(!ctx)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.connect(g);g.connect(ctx.destination);o.frequency.value=freq;const t=ctx.currentTime+delay;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);o.start(t);o.stop(t+dur);}catch(e){}
+}
+function playSound(type){
+  try{
+    if(type==='correct'){tone(523,.12,'sine',.22);tone(659,.18,'sine',.2,.1);}
+    else if(type==='wrong'){tone(220,.15,'sawtooth',.18);tone(160,.2,'sawtooth',.16,.15);}
+    else if(type==='streak'){[523,659,784,1047].forEach((f,i)=>tone(f,.18,'sine',.18,i*.1));}
+    else if(type==='tick'){tone(900,.08,'square',.12);}
+    else if(type==='boss_music'){
+      tone(80,.6,'sawtooth',.15);tone(160,.4,'sawtooth',.1,.15);tone(240,.3,'sawtooth',.1,.3);
+      tone(60,.8,'sine',.08,.5);[440,494,523,587,659,698,784].forEach((f,i)=>tone(f,.15,'square',.12,i*.1));
+    }
+    else if(type==='boss_correct'){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.3,'sine',.18,i*.06));}
+    else if(type==='countdown'){tone(880,.1,'sine',.18);}
+  }catch(e){}
+}
+
+/* ═══════════ PARTICLES ═══════════ */
+function initParticles(){
+  const c=document.getElementById('particles'),ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const pts=Array.from({length:55},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2+.5,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,a:Math.random()*.5+.2}));
+  function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(168,85,247,${p.a*.3})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;});requestAnimationFrame(draw);}
+  draw();window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+}
+
+/* ═══════════ UTILS ═══════════ */
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goHome(){showScreen('homeScreen');}
+function showToast(msg,ok=false){
+  const t=document.createElement('div');t.className='toast'+(ok?' ok':'');t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+/* Leaderboard button — unlocked permanently after first completed game */
+function handleLbClick(){
+  if(!hasPlayedEver){showToast('🏆 Complete a game first to unlock the leaderboard!');return;}
+  showLeaderboard('home');
+}
+
+/* ═══════════ VALIDATION ═══════════ */
+function validateNames(){
+  const f=document.getElementById('firstName').value.trim();
+  const l=document.getElementById('lastName').value.trim();
+  const hint=document.getElementById('nameHint');
+  const ok=/^[a-zA-Z'\-]+$/;
+  if(!f||!l){hint.textContent='Please enter both first and last name.';return null;}
+  if(f.length<2||l.length<2){hint.textContent='Each name must be at least 2 characters.';return null;}
+  if(!ok.test(f)||!ok.test(l)){hint.textContent='Letters only — no numbers or spaces within names.';return null;}
+  hint.textContent='';return f+' '+l;
+}
+
+/* ═══════════ GAME SETUP ═══════════ */
+function startGame(){
+  const fullName=validateNames();if(!fullName)return;
+  clearInterval(timerInt);
+
+  /* Boss at positions 9,19,29,39 (Q10,Q20,Q30,Q40) */
+  const bossPositions=new Set([9,19,29,39]);
+  const normals=[...NORMAL_Q].sort(()=>Math.random()-.5);
+  const bosses=[...BOSS_Q].sort(()=>Math.random()-.5);
+  const sequence=[];let ni=0,bi=0;
+  for(let i=0;i<45;i++){
+    if(bossPositions.has(i)&&bi<bosses.length){sequence.push({...bosses[bi++],boss:true});}
+    else{sequence.push({...normals[ni++],boss:false});}
+  }
+
+  sessionId=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  gs={name:fullName,questions:sequence,current:0,score:0,lives:10,combo:1,streak:0,bestStreak:0,lifelines:3,timeLeft:18,totalTime:0,correct:0,bossCorrect:0,startTime:Date.now(),_gameOver:false};
+  buildHeartsRow();buildStreakDots();
+  showScreen('gameScreen');
+  runCountdown(()=>loadQuestion());
+}
+
+function runCountdown(cb){
+  const ov=document.createElement('div');ov.className='countdown-overlay';
+  const num=document.createElement('div');num.className='countdown-num';
+  const lbl=document.createElement('div');lbl.className='countdown-label';lbl.textContent='Get Ready';
+  ov.appendChild(num);ov.appendChild(lbl);document.getElementById('gameScreen').appendChild(ov);
+  let c=5;num.textContent=c;playSound('countdown');
+  const iv=setInterval(()=>{
+    c--;if(c<=0){clearInterval(iv);ov.remove();cb();return;}
+    num.style.animation='none';void num.offsetWidth;num.style.animation='countPop .9s ease-out';
+    num.textContent=c;playSound('countdown');
+  },1000);
+}
+
+function buildHeartsRow(){
+  const row=document.getElementById('heartsRow');row.innerHTML='';
+  for(let i=0;i<10;i++){const s=document.createElement('span');s.className='heart';s.id='h'+i;s.textContent='❤️';row.appendChild(s);}
+}
+function buildStreakDots(){
+  const d=document.getElementById('streakDots');d.innerHTML='';
+  for(let i=0;i<5;i++){const dot=document.createElement('div');dot.className='dot';dot.id='dd'+i;d.appendChild(dot);}
+}
+
+/* ═══════════ QUESTIONS ═══════════ */
+function loadQuestion(){
+  if(gs.current>=45||gs.lives<=0){endGame();return;}
+  clearInterval(timerInt);
+  const q=gs.questions[gs.current];
+  const isBoss=q.boss===true;
+  if(isBoss){showBossAlert(()=>actuallyLoadQuestion(q,isBoss));}
+  else{actuallyLoadQuestion(q,isBoss);}
+}
+
+function showBossAlert(cb){
+  playSound('boss_music');
+  const ov=document.createElement('div');ov.className='boss-overlay';
+  ov.innerHTML=`<div class="boss-skull">💀</div><div class="boss-title">BOSS QUESTION</div><div class="boss-sub">+250 pts · 25 seconds · No mercy</div>`;
+  document.getElementById('gameScreen').appendChild(ov);
+  setTimeout(()=>{ov.remove();cb();},2200);
+}
+
+function actuallyLoadQuestion(q,isBoss){
+  const maxTime=isBoss?25:18;
+  gs.timeLeft=maxTime;
+  document.getElementById('qLabel').textContent=`Q ${gs.current+1} of 45`;
+  document.getElementById('qNum').textContent=`${gs.current+1}/45`;
+  const tag=document.getElementById('qTypeTag');
+  tag.textContent=q.t==='tf'?'True / False':'MCQ';
+  tag.className='q-type-tag '+(q.t==='tf'?'q-type-tf':'q-type-mcq');
+  document.getElementById('bossBadge').style.display=isBoss?'inline-flex':'none';
+  document.getElementById('qCard').className='question-card'+(isBoss?' boss-card':'');
+  document.getElementById('timerFill').className=isBoss?'boss-timer':'';
+  document.getElementById('timerBox').className='stat-box'+(isBoss?' boss-stat':'');
+  document.getElementById('qText').textContent=q.q;
+  const cont=document.getElementById('optContainer');cont.innerHTML='';
+  q.o.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='opt';btn.textContent=opt;btn.onclick=()=>answer(i,isBoss);cont.appendChild(btn);
+  });
+  updateComboDisplay();startTimer(maxTime);
+}
+
+/* ═══════════ TIMER ═══════════ */
+function startTimer(maxTime){
+  const fill=document.getElementById('timerFill'),tv=document.getElementById('timerVal');
+  fill.classList.remove('warning');let warned=false;let lastTick=-1;
+  timerInt=setInterval(()=>{
+    gs.timeLeft-=.1;gs.totalTime+=.1;
+    const pct=Math.max(0,(gs.timeLeft/maxTime)*100);
+    fill.style.width=pct+'%';
+    const ceil=Math.ceil(gs.timeLeft);tv.textContent=ceil;
+    if(gs.timeLeft<=5&&!warned){warned=true;fill.classList.add('warning');}
+    if(gs.timeLeft<=5&&ceil!==lastTick&&ceil>=1){lastTick=ceil;playSound('tick');}
+    if(gs.timeLeft<=0){clearInterval(timerInt);timeOut();}
+  },100);
+}
+function timeOut(){
+  const q=gs.questions[gs.current];disableOpts();
+  document.querySelectorAll('.opt')[q.a].classList.add('correct');
+  gs.lives--;gs.combo=1;gs.streak=0;
+  updateLives();updateStats();updateStreakUI();showFloat('⏰ Time!','#ef4444');
+  if(gs.lives<=0){endGame();return;}
+  setTimeout(()=>{gs.current++;loadQuestion();},1200);
+}
+
+/* ═══════════ ANSWER ═══════════ */
+function answer(idx,isBoss){
+  clearInterval(timerInt);
+  const q=gs.questions[gs.current];const opts=document.querySelectorAll('.opt');disableOpts();
+  if(idx===q.a){
+    opts[idx].classList.add('correct');
+    const pts=(isBoss?250:100)*gs.combo;
+    gs.score+=pts;gs.correct++;gs.streak++;
+    if(isBoss)gs.bossCorrect++;
+    if(gs.streak>gs.bestStreak)gs.bestStreak=gs.streak;
+    if(gs.streak>=3)gs.combo=Math.min(4,1+Math.floor(gs.streak/3));
+    if(gs.streak%5===0){confetti();playSound('streak');showStreakPopup(`🔥 ${gs.streak} Streak!`);}
+    else if(isBoss){playSound('boss_correct');}
+    else{playSound('correct');}
+    showFloat(`+${pts}${isBoss?' 💀':''}`,isBoss?'#f59e0b':'#22c55e');
+  } else {
+    opts[idx].classList.add('wrong');opts[q.a].classList.add('correct');
+    gs.lives--;gs.combo=1;gs.streak=0;
+    updateLives();playSound('wrong');showFloat('−1 ❤️','#ef4444');
+  }
+  updateStats();updateStreakUI();updateComboDisplay();
+  if(gs.lives<=0){endGame();return;}
+  setTimeout(()=>{gs.current++;loadQuestion();},1100);
+}
+function disableOpts(){document.querySelectorAll('.opt').forEach(o=>{o.classList.add('disabled');o.onclick=null;});}
+
+function useLifeline(){
+  if(gs.lifelines<=0)return;
+  gs.lifelines--;
+  const q=gs.questions[gs.current];
+  gs.timeLeft=Math.min(q&&q.boss?25:18,gs.timeLeft+10);
+  document.getElementById('lifelineCount').textContent=gs.lifelines;
+  document.getElementById('lifelineBtn').disabled=gs.lifelines<=0;
+  showFloat('+10s ⏰','#06b6d4');
+}
+
+/* ═══════════ UI ═══════════ */
+function updateLives(){
+  for(let i=0;i<10;i++){const h=document.getElementById('h'+i);if(h)h.className='heart'+(i>=gs.lives?' lost':'');}
+  document.getElementById('livesVal').textContent=gs.lives;
+}
+function updateStats(){document.getElementById('scoreVal').textContent=gs.score;document.getElementById('lifelineBtn').disabled=gs.lifelines<=0;}
+function updateComboDisplay(){
+  const d=document.getElementById('comboDisp');
+  d.textContent=`×${gs.combo} Combo`;
+  d.className='combo-display '+(['cx1','cx2','cx3','cx4'][gs.combo-1]||'cx1');
+}
+function updateStreakUI(){
+  const s=gs.streak%5;const allFull=gs.streak>0&&gs.streak%5===0;
+  for(let i=0;i<5;i++){const d=document.getElementById('dd'+i);if(d)d.className='dot'+(i<s||allFull?' active':'');}
+  document.getElementById('streakCount').textContent=`Streak: ${gs.streak}`;
+  document.getElementById('bestStreakVal').textContent=gs.bestStreak;
+}
+function showFloat(txt,color){
+  const el=document.createElement('div');el.className='float-popup';
+  el.style.cssText=`color:${color};left:${25+Math.random()*50}%;top:${35+Math.random()*25}%`;
+  el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+function showStreakPopup(txt){
+  const el=document.createElement('div');el.className='streak-popup';el.style.color='#f59e0b';
+  el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),850);
+}
+function confetti(){
+  const cols=['#a855f7','#06b6d4','#f59e0b','#22c55e','#ef4444','#ec4899','#fff'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');el.className='confetti-piece';const sz=5+Math.random()*8;
+    el.style.cssText=`width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}vw;top:-10px;animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*.4}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),3600);
+  }
+}
+
+/* ═══════════════════════════════════════
+   END GAME
+═══════════════════════════════════════ */
+function endGame(){
+  if(gs._gameOver)return;  /* guard: prevent double-fire */
+  gs._gameOver=true;
+  clearInterval(timerInt);
+  hasPlayedEver=true;
+  localStorage.setItem('cnsHasPlayed','1');
+
+  const elapsed=Math.round((Date.now()-gs.startTime)/1000);
+  const acc=gs.current>0?Math.round((gs.correct/gs.current)*100):0;
+  const rank=getRank(gs.score);
+
+  lastEntry={
+    sid:sessionId,
+    name:gs.name,
+    score:gs.score,
+    mark:gs.correct,
+    acc,
+    bestStreak:gs.bestStreak,
+    bossCorrect:gs.bossCorrect,
+    time:elapsed,
+    date:new Date().toLocaleDateString(),
+    ts:Date.now()
+  };
+
+  /* Write to Firebase using SDK — push() guarantees unique key, no duplicates */
+  if(window._fbReady){
+    window._scoresRef.push(lastEntry)
+      .then(()=>{ console.log('✅ Score saved to Firebase'); })
+      .catch(err=>{ console.warn('Firebase write error:', err); _localSave(lastEntry); });
+  } else {
+    _localSave(lastEntry);
+  }
+
+  document.getElementById('endEmoji').textContent=rank.emoji;
+  document.getElementById('rankTitle').textContent=rank.title;
+  document.getElementById('rankTitle').style.color=rank.color;
+  document.getElementById('rankSub').textContent=rank.sub;
+  document.getElementById('endScore').textContent=gs.score;
+  document.getElementById('endMark').textContent=`${gs.correct}/45 correct · ${acc}% accuracy · Best streak: ${gs.bestStreak}`;
+  document.getElementById('endStats').innerHTML=`
+    <div class="stat-box"><div class="stat-label">Correct</div><div class="stat-val">${gs.correct}/45</div></div>
+    <div class="stat-box"><div class="stat-label">Accuracy</div><div class="stat-val">${acc}%</div></div>
+    <div class="stat-box"><div class="stat-label">Best Streak</div><div class="stat-val">${gs.bestStreak}🔥</div></div>
+    <div class="stat-box"><div class="stat-label">Boss Qs ✓</div><div class="stat-val">${gs.bossCorrect}/4</div></div>
+  `;
+  if(gs.correct>=35)confetti();
+  showScreen('endScreen');
+}
+
+/* ═══════════════════════════════════════
+   GLOBAL LEADERBOARD — Firebase SDK read
+═══════════════════════════════════════ */
+function showLeaderboard(from){
+  lbFrom=from;
+  showScreen('leaderboardScreen');
+  document.getElementById('lbContent').innerHTML='<div class="lb-loading"><span class="lb-spinner"></span>Loading global scores...</div>';
+  document.getElementById('lbSub').textContent='Fetching scores from all players worldwide...';
+
+  if(!window._fbReady){
+    /* Firebase not ready — show local fallback */
+    const local=_localLoad();
+    document.getElementById('lbSub').textContent='Local scores (offline)';
+    renderLeaderboard(local);
+    return;
+  }
+
+  /* Read top 50 by score — Firebase SDK, no index needed */
+  window._scoresRef.orderByChild('score').limitToLast(50).once('value')
+    .then(snapshot=>{
+      const data=snapshot.val();
+      if(!data){
+        document.getElementById('lbContent').innerHTML=`<div style="text-align:center;color:var(--muted);padding:50px">No scores yet — be the first! 🏆</div>`;
+        document.getElementById('lbSub').textContent='No scores yet';
+        return;
+      }
+      const scores=Object.values(data).sort((a,b)=>b.score-a.score||a.time-b.time);
+      document.getElementById('lbSub').textContent=`${scores.length} player${scores.length!==1?'s':''} worldwide 🌍`;
+      renderLeaderboard(scores);
+    })
+    .catch(err=>{
+      console.warn('Firebase read error:', err);
+      const local=_localLoad();
+      document.getElementById('lbSub').textContent='Local scores (connection issue)';
+      renderLeaderboard(local);
+    });
+}
+
+function renderLeaderboard(scores){
+  if(!scores||scores.length===0){
+    document.getElementById('lbContent').innerHTML=`<div style="text-align:center;color:var(--muted);padding:50px">No scores yet — be the first! 🏆</div>`;
+    return;
+  }
+  let html=`<table class="lb-table"><thead><tr>
+    <th>#</th><th>Name</th><th>Rank</th><th>Score</th><th>Mark</th><th>Accuracy</th><th>Best Streak</th><th>Time</th><th>Date</th>
+  </tr></thead><tbody>`;
+  scores.forEach((s,i)=>{
+    const isMe=lastEntry&&s.sid&&s.sid===lastEntry.sid;
+    const rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    const rk=getRank(s.score);
+    html+=`<tr${isMe?' class="me"':''}>
+      <td><span class="rank-badge ${rc}">${i+1}</span></td>
+      <td>${esc(s.name)}</td>
+      <td><span class="rank-chip">${rk.emoji} ${rk.title}</span></td>
+      <td style="font-weight:700;color:#a855f7">${s.score}</td>
+      <td>${s.mark}/45</td>
+      <td>${s.acc}%</td>
+      <td>${s.bestStreak||0}🔥</td>
+      <td>${s.time}s</td>
+      <td>${s.date}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('lbContent').innerHTML=html;
+}
+
+function esc(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _localSave(e){let s=JSON.parse(localStorage.getItem('cnsLocal')||'[]');s=s.filter(x=>x.sid!==e.sid);s.push(e);s.sort((a,b)=>b.score-a.score||a.time-b.time);if(s.length>50)s=s.slice(0,50);localStorage.setItem('cnsLocal',JSON.stringify(s));}
+function _localLoad(){return JSON.parse(localStorage.getItem('cnsLocal')||'[]');}
+function backFromLb(){if(lbFrom==='end')showScreen('endScreen');else showScreen('homeScreen');}
+
+
+/* ═══════════ SHARE ═══════════ */
+function goShare(){if(!lastEntry){showToast('Play a game first!');return;}buildShareCanvas();showScreen('shareScreen');}
+function buildShareCanvas(){
+  const c=document.getElementById('shareCanvas'),ctx=c.getContext('2d');
+  const W=480,H=640;c.width=W;c.height=H;
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#0d0d1f');bg.addColorStop(.5,'#1a0a3a');bg.addColorStop(1,'#0a0f1f');
+  ctx.fillStyle=bg;ctx.roundRect(0,0,W,H,24);ctx.fill();
+  const glow=ctx.createRadialGradient(W/2,0,0,W/2,0,220);glow.addColorStop(0,'rgba(168,85,247,.35)');glow.addColorStop(1,'rgba(168,85,247,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  ctx.font='68px serif';ctx.textAlign='center';ctx.fillText('🧠',W/2,110);
+  ctx.font='bold 28px Syne,serif';
+  const gTitle=ctx.createLinearGradient(W*.25,0,W*.75,0);gTitle.addColorStop(0,'#c084fc');gTitle.addColorStop(.5,'#06b6d4');gTitle.addColorStop(1,'#f59e0b');
+  ctx.fillStyle=gTitle;ctx.fillText('CNS Anatomy Quiz',W/2,155);
+  const r=getRank(lastEntry.score);
+  ctx.font='38px serif';ctx.fillText(r.emoji,W/2,210);
+  ctx.font='bold 22px Syne,serif';ctx.fillStyle=r.color;ctx.fillText(r.title,W/2,242);
+  ctx.font='13px DM Sans,sans-serif';ctx.fillStyle='#94a3b8';ctx.fillText(r.sub,W/2,264);
+  const gs2=ctx.createLinearGradient(W*.2,0,W*.8,0);gs2.addColorStop(0,'#a855f7');gs2.addColorStop(1,'#06b6d4');
+  ctx.font='bold 72px Syne,serif';ctx.fillStyle=gs2;ctx.fillText(lastEntry.score,W/2,350);
+  ctx.font='14px DM Sans,sans-serif';ctx.fillStyle='#64748b';ctx.fillText('TOTAL SCORE',W/2,375);
+  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(60,395);ctx.lineTo(W-60,395);ctx.stroke();
+  [['✅',`${lastEntry.mark}/45`,'Correct'],['🎯',`${lastEntry.acc}%`,'Accuracy'],['🔥',`${lastEntry.bestStreak}`,'Best Streak'],['💀',`${lastEntry.bossCorrect||0}/4`,'Boss Qs']].forEach((st,i)=>{
+    const col=i%2===0?W*.25:W*.75;const row=i<2?430:490;
+    ctx.font='20px serif';ctx.fillText(st[0],col,row-16);
+    ctx.font='bold 22px Syne,serif';ctx.fillStyle='#e2e8f0';ctx.fillText(st[1],col,row+6);
+    ctx.font='11px DM Sans,sans-serif';ctx.fillStyle='#64748b';ctx.fillText(st[2],col,row+22);
+  });
+  ctx.font='bold 16px DM Sans,sans-serif';ctx.fillStyle='#e2e8f0';ctx.fillText(lastEntry.name,W/2,560);
+  ctx.font='12px DM Sans,sans-serif';ctx.fillStyle='#475569';ctx.fillText(lastEntry.date,W/2,580);
+  ctx.strokeStyle='rgba(168,85,247,.3)';ctx.lineWidth=1.5;ctx.roundRect(.75,.75,W-1.5,H-1.5,24);ctx.stroke();
+}
+function downloadShare(){
+  const a=document.createElement('a');a.download='cns-quiz-score.png';a.href=document.getElementById('shareCanvas').toDataURL('image/png');a.click();
+}
+
+/* ═══════════ INIT ═══════════ */
+initParticles();
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);this.lineTo(x+r,y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-r);this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();
+  };
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════
+     Firebase SDK loaded AFTER game script so the
+     game works even if Firebase is slow to load.
+     SDK initialises itself then sets window._fbReady
+     so the game code can safely check it.
+════════════════════════════════════════════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){
+  try{
+    const cfg={
+      apiKey:"AIzaSyA7LN-hqbO0bYhrQOWxDU9es7su6KImXrg",
+      authDomain:"cns-anatomy-quiz.firebaseapp.com",
+      databaseURL:"https://cns-anatomy-quiz-default-rtdb.firebaseio.com",
+      projectId:"cns-anatomy-quiz",
+      storageBucket:"cns-anatomy-quiz.firebasestorage.app",
+      messagingSenderId:"481000060471",
+      appId:"1:481000060471:web:4083dda4f0b95951a3b1b2"
+    };
+    firebase.initializeApp(cfg);
+    window._scoresRef=firebase.database().ref('scores');
+    window._fbReady=true;
+    console.log('🔥 Firebase connected');
+  }catch(e){
+    window._fbReady=false;
+    console.warn('Firebase init failed:',e);
+  }
+})();
+</script>
+</body>
+</html>
