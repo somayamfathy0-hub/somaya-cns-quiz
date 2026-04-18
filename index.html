@@ -662,7 +662,7 @@ function showLeaderboard(from){
         document.getElementById('lbSub').textContent='No scores yet';
         return;
       }
-      const scores=Object.values(data).sort((a,b)=>b.score-a.score||a.time-b.time);
+      const scores=Object.values(data).sort((a,b)=>b.mark-a.mark||b.score-a.score||a.time-b.time);
       document.getElementById('lbSub').textContent=`${scores.length} player${scores.length!==1?'s':''} worldwide 🌍`;
       renderLeaderboard(scores);
     })
@@ -703,7 +703,7 @@ function renderLeaderboard(scores){
 }
 
 function esc(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function _localSave(e){let s=JSON.parse(localStorage.getItem('cnsLocal')||'[]');s=s.filter(x=>x.sid!==e.sid);s.push(e);s.sort((a,b)=>b.score-a.score||a.time-b.time);if(s.length>50)s=s.slice(0,50);localStorage.setItem('cnsLocal',JSON.stringify(s));}
+function _localSave(e){let s=JSON.parse(localStorage.getItem('cnsLocal')||'[]');s=s.filter(x=>x.sid!==e.sid);s.push(e);s.sort((a,b)=>b.mark-a.mark||b.score-a.score||a.time-b.time);if(s.length>50)s=s.slice(0,50);localStorage.setItem('cnsLocal',JSON.stringify(s));}
 function _localLoad(){return JSON.parse(localStorage.getItem('cnsLocal')||'[]');}
 function backFromLb(){if(lbFrom==='end')showScreen('endScreen');else showScreen('homeScreen');}
 
