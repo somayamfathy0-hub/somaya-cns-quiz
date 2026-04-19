@@ -607,7 +607,7 @@ function endGame(){
     bestStreak:gs.bestStreak,
     bossCorrect:gs.bossCorrect,
     time:elapsed,
-    date:new Date().toLocaleDateString(),
+    date:(()=>{const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();})(),
     ts:Date.now()
   };
 
@@ -694,7 +694,7 @@ function renderLeaderboard(scores){
       <td>${s.mark}/45</td>
       <td>${s.acc}%</td>
       <td>${s.bestStreak||0}🔥</td>
-      <td>${s.time}s</td>
+      <td>${s.time>=60?Math.floor(s.time/60)+'m '+((s.time%60)+'s'):s.time+'s'}</td>
       <td>${s.date}</td>
     </tr>`;
   });
