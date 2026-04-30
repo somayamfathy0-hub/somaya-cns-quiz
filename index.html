@@ -279,7 +279,7 @@ const PLACEHOLDER = false; // Firebase is now configured!
 /* ═══════════ QUESTIONS ═══════════ */
 const NORMAL_Q=[
 {q:"The medulla oblongata is conical with its broad extremity directed:",o:["Downwards","Upwards","Laterally","Posteriorly"],a:1,t:"mcq"},
-{q:"True or False: The open medulla contains the fourth ventricle.",o:["True","False"],a:0,t:"tf"},
+{q:"True or False: The open medulla contains the fourth ventricle.",o:["True","False"],a:1,t:"tf"},
 {q:"Which structure is on the ventral surface of the medulla oblongata?",o:["Fasciculus gracilis","Pyramid","Facial colliculus","Vestibular area"],a:1,t:"mcq"},
 {q:"The pyramids of the medulla are composed of:",o:["Spinocerebellar fibers","Corticospinal fibers","Rubrospinal fibers","Vestibulospinal fibers"],a:1,t:"mcq"},
 {q:"From which groove do rootlets of the hypoglossal nerve emerge?",o:["Anterior median fissure","Post-olivary fissure","Between pyramid and olive","Posterior median sulcus"],a:2,t:"mcq"},
@@ -318,14 +318,14 @@ const NORMAL_Q=[
 {q:"Which structure separates the superior and inferior cerebellar surfaces?",o:["Primary fissure","Posterolateral fissure","Horizontal fissure","Secondary fissure"],a:2,t:"mcq"},
 {q:"True or False: The medial geniculate body is the primary relay for the auditory system.",o:["True","False"],a:0,t:"tf"},
 {q:"The trochlear nerve (CN IV) arises from which side of the midbrain?",o:["Anterior","Posterior","Lateral","Inferior"],a:1,t:"mcq"},
-{q:"The subthalamic nucleus receives connections from the red nucleus and:",o:["Cerebellum","Substantia nigra","Thalamus","Hippocampus"],a:1,t:"mcq"}
+{q:"The four dural folds (reflections) that project into the cranial cavity to divide it into compartments are specifically formed by the inward folding of which layer?",o:["The outer periosteal layer of the dura mater","The inner meningeal layer of the dura mater","The arachnoid mater","The pia mater"],a:1,t:"mcq"}
 ];
 
 const BOSS_Q=[
 {q:"💀 BOSS: A patient has ipsilateral Horner's syndrome, ipsilateral ataxia, and contralateral loss of pain/temperature. Which artery is most likely occluded?",o:["Vertebral artery","Posterior Inferior Cerebellar Artery (PICA)","Basilar artery","Anterior spinal artery"],a:1,t:"mcq"},
 {q:"💀 BOSS: Neurobiotaxis explains the Facial Colliculus because:",o:["CN VII axons regenerate toward the brainstem","The facial motor nucleus migrates away from the 4th ventricle floor; its anchored axon loops around the abducent nucleus creating the bump","CN VII crosses the midline twice in development","The abducent nucleus migrates toward CN VII fibers"],a:1,t:"mcq"},
-{q:"💀 BOSS: Which combination correctly matches cerebellar subdivisions to their deep nucleus output?",o:["Archicerebellum→Dentate; Paleocerebellum→Fastigial; Neocerebellum→Globose","Archicerebellum→Fastigial→Vestibular nuclei; Paleocerebellum→Globose & Emboliform→Red nucleus; Neocerebellum→Dentate→Thalamus","Archicerebellum→Globose; Paleocerebellum→Dentate; Neocerebellum→Fastigial","All subdivisions project exclusively through the dentate nucleus"],a:1,t:"mcq"},
-{q:"💀 BOSS: The dentato-rubro-thalamo-cortical pathway causes ipsilateral cerebellar deficits via double-crossing. Which statement is correct?",o:["Cerebellar efferents cross once in the superior peduncle; corticospinal fibers cross again at the pyramids — net effect is ipsilateral","The pathway never crosses","Efferents cross at the inferior colliculus and re-cross at the spinal cord","Cerebellar afferents cross at the pons and efferents cross at the medulla"],a:0,t:"mcq"}
+{q:"💀 BOSS: The straight sinus is a key component of the dural venous system located where the falx cerebri meets the tentorium cerebelli. Which two structures unite to form this sinus?",o:["Superior sagittal sinus and the great cerebral vein","Inferior sagittal sinus and the great cerebral vein","Transverse sinus and the sigmoid sinus","Occipital sinus and the confluence of sinuses"],a:1,t:"mcq"},
+{q:"💀 BOSS: The 'diaphragma sellae' is one of the four inward reflections of the meningeal dura mater. What is its primary anatomical role?",o:["It separates the right and left cerebral hemispheres.","It separates the occipital lobes of the cerebrum from the cerebellum.","It covers the hypophysial fossa and has a small opening for the pituitary stalk.","It separates the right and left cerebellar hemispheres within the posterior fossa."],a:2,t:"mcq"}
 ];
 
 /* ═══════════ RANKS ═══════════ */
@@ -607,7 +607,7 @@ function endGame(){
     bestStreak:gs.bestStreak,
     bossCorrect:gs.bossCorrect,
     time:elapsed,
-    date:(()=>{const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();})(),
+    date:new Date().toLocaleDateString(),
     ts:Date.now()
   };
 
@@ -662,7 +662,7 @@ function showLeaderboard(from){
         document.getElementById('lbSub').textContent='No scores yet';
         return;
       }
-      const scores=Object.values(data).sort((a,b)=>b.mark-a.mark||b.score-a.score||a.time-b.time);
+      const scores=Object.values(data).sort((a,b)=>b.score-a.score||a.time-b.time);
       document.getElementById('lbSub').textContent=`${scores.length} player${scores.length!==1?'s':''} worldwide 🌍`;
       renderLeaderboard(scores);
     })
@@ -694,7 +694,7 @@ function renderLeaderboard(scores){
       <td>${s.mark}/45</td>
       <td>${s.acc}%</td>
       <td>${s.bestStreak||0}🔥</td>
-      <td>${s.time>=60?Math.floor(s.time/60)+'m '+((s.time%60)+'s'):s.time+'s'}</td>
+      <td>${s.time}s</td>
       <td>${s.date}</td>
     </tr>`;
   });
@@ -703,7 +703,7 @@ function renderLeaderboard(scores){
 }
 
 function esc(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function _localSave(e){let s=JSON.parse(localStorage.getItem('cnsLocal')||'[]');s=s.filter(x=>x.sid!==e.sid);s.push(e);s.sort((a,b)=>b.mark-a.mark||b.score-a.score||a.time-b.time);if(s.length>50)s=s.slice(0,50);localStorage.setItem('cnsLocal',JSON.stringify(s));}
+function _localSave(e){let s=JSON.parse(localStorage.getItem('cnsLocal')||'[]');s=s.filter(x=>x.sid!==e.sid);s.push(e);s.sort((a,b)=>b.score-a.score||a.time-b.time);if(s.length>50)s=s.slice(0,50);localStorage.setItem('cnsLocal',JSON.stringify(s));}
 function _localLoad(){return JSON.parse(localStorage.getItem('cnsLocal')||'[]');}
 function backFromLb(){if(lbFrom==='end')showScreen('endScreen');else showScreen('homeScreen');}
 
